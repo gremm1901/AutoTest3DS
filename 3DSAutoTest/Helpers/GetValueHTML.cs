@@ -10,9 +10,9 @@ namespace _3DSAutoTest.Helpers
         /// <param name="name">Имя параметра</param>
         /// <param name="html">HTML строка</param>
         /// <returns></returns>
-        public static string GetValue(string name, string html)
+        public static string GetValue(string name, string html, bool toUpper = false)
         {
-            if (name == "PaRes") {
+            if (name == "PaRes" || toUpper) {
                 Regex regex = new Regex(@$"NAME=""{name}"".+?VALUE=""([^""]+)""");
                 GroupCollection matches = regex.Match(html).Groups;
                 string str = matches[1].Value;

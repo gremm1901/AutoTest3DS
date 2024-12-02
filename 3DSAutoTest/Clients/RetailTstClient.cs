@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace _3DSAutoTest.Clients
 {
@@ -15,7 +16,11 @@ namespace _3DSAutoTest.Clients
         RestClient _client;
         public RetailTstClient(string url)
         {
-            _client = new RestClient(url);
+            var options = new RestClientOptions(url);
+            options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+
+            _client = new RestClient(options);
+
         }
         /// <summary>
         /// Старт Операции
@@ -75,7 +80,7 @@ namespace _3DSAutoTest.Clients
         /// <returns></returns>
         private RestResponse<SaltResponse> Salt(SaltRequests body)
         {
-            var request = new RestRequest($"/s/auth/authentication/salt", Method.Post);
+            var request = new RestRequest("/s/auth/authentication/salt", Method.Post);
             request.AddBody(body);
 
             return _client.Execute<SaltResponse>(request);
@@ -140,15 +145,20 @@ namespace _3DSAutoTest.Clients
         /// <summary>
         /// Авторизация клиента
         /// </summary>
-        /// <param name="body">Данные для входа</param>
-        public RestResponse AuthClient(SaltRequests body)
+        /// <param name="nk">нк для входа</param>
+        /// <param name="pass">роль от учетки по штату 1111111</param>
+        public RestResponse AuthClient(string nk, string pass = "1111111")
         {
-            var salt = Salt(body);
-
-            var pwd = Helpers.PasswordSalt.SaltPassword("1111111", salt.Data.PasswordSalt, salt.Data.SessionSalt);
+            var saltBody = new SaltRequests
+            {
+                ClientIdentifier = nk,
+                LoginType = "login"
+            };
+            var salt = Salt(saltBody);
+            var pwd = Helpers.PasswordSalt.SaltPassword(pass, salt.Data.PasswordSalt, salt.Data.SessionSalt);
             var tokenReq = new FirstTokenRequest
             {
-                Username = body.ClientIdentifier,
+                Username = saltBody.ClientIdentifier,
                 Password = pwd,
                 RequestId = salt.Data.RequestId,
                 ClientId = "website",
@@ -184,7 +194,7 @@ namespace _3DSAutoTest.Clients
         /// <returns></returns>
         public RestResponse<DataCardResponse> GetCardInfo(string idCard)
         {
-            var request = new RestRequest($"/api/cards/v2/accounts/{idCard}", Method.Post);
+            var request = new RestRequest($"/c/cards-clientapi/cards/accounts/{idCard}", Method.Post);
             return _client.Execute<DataCardResponse>(request);
         }
         /// <summary>
@@ -194,8 +204,17 @@ namespace _3DSAutoTest.Clients
         /// <returns></returns>
         public RestResponse<DataScoreResponse> GetScoreInfo(string idScore)
         {
-            var request = new RestRequest($"/api/accounts/{idScore}", Method.Post);
+            var request = new RestRequest($"/api/accounts/{idScore}", Method.Get);
             return _client.Execute<DataScoreResponse>(request);
+        }
+        /// <summary>
+        /// Получить статус по операции
+        /// </summary>
+        /// <param name="requestId">Номер поручения</param>
+        /// <returns></returns>
+        public RestResponse GetState(long requestId)
+        {
+            return _client.Execute(new RestRequest($"/api/operations/requests/{requestId}/state", Method.Get));
         }
     }
 }

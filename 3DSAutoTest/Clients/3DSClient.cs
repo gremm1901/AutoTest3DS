@@ -1,5 +1,6 @@
 ﻿using _3DSAutoTest.Entites._3DSEntites.Requests;
 using _3DSAutoTest.Entites.RetailTstEntites.responses;
+using _3DSAutoTest.Helpers;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -62,13 +63,67 @@ namespace _3DSAutoTest.Clients
         /// <param name="PaRes"></param>
         /// <param name="MD"></param>
         /// <returns></returns>
-        public RestResponse Final3DSC2A(string PaRes, string MD)
+        public RestResponse Final3DSC2A(string next3ds, string MD)
         {
+
+            string PaRes = GetValueHTML.GetValue("PaRes", next3ds);
             var request = new RestRequest($"/cgi-bin/cgi_link", Method.Post);
             request.AddHeader("content-type", "application/x-www-form-urlencoded");
             request.AddParameter("PaRes", PaRes, ParameterType.GetOrPost);
             request.AddParameter("MD", MD, ParameterType.GetOrPost);
             return _client.Execute(request);
+        }
+
+        public RestResponse C2C3DSFirstStep(string html3ds)
+        {
+            var we = GetValueHTML.GetValue("CONFRIM", html3ds, true);
+            var request = new RestRequest($"/cgi-bin/cgi_link", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddParameter("CONFRIM_ID", GetValueHTML.GetValue("CONFIRM_ID", html3ds,true), ParameterType.GetOrPost);
+            request.AddParameter("CONFIRM", GetValueHTML.GetValue("CONFIRM", html3ds, true), ParameterType.GetOrPost);
+            request.AddParameter("TERMINAL", GetValueHTML.GetValue("TERMINAL", html3ds, true), ParameterType.GetOrPost);
+            request.AddParameter("TRTYPE", GetValueHTML.GetValue("TRTYPE", html3ds, true), ParameterType.GetOrPost);
+            request.AddParameter("LANG", GetValueHTML.GetValue("LANG", html3ds, true), ParameterType.GetOrPost);
+            request.AddParameter("SUBMIT", GetValueHTML.GetValue("SUBMIT", html3ds, true), ParameterType.GetOrPost);
+            return _client.Execute(request);
+        }
+        public RestResponse C2C3DSSecondStep(string html3ds, string gid)
+        {
+            var request = new RestRequest($"/way4acs/pa?id={gid}.OC", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddParameter("PaReq", GetValueHTML.GetValue("PaReq", html3ds), ParameterType.GetOrPost);
+            request.AddParameter("MD", GetValueHTML.GetValue("MD", html3ds), ParameterType.GetOrPost);
+            request.AddParameter("TermUrl", GetValueHTML.GetValue("TermUrl", html3ds), ParameterType.GetOrPost);
+            return _client.Execute(request);
+        }
+        public RestResponse C2C3DSThirdStep(string html3ds, string password , string gid)
+        {
+            var request = new RestRequest("/way4acs/uidispatcher", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+
+            request.AddParameter("PASSWORD", password, ParameterType.GetOrPost);
+            request.AddParameter("formaction", "pa.submit", ParameterType.GetOrPost);
+            request.AddParameter("PSW_RENEW", "Y", ParameterType.GetOrPost);
+            request.AddParameter("TRIES", "Y", ParameterType.GetOrPost);
+            request.AddParameter("gid", gid, ParameterType.GetOrPost);
+            return _client.Execute(request);
+        }
+        public RestResponse C2C3DSFourthStep(string html3ds)
+        {
+            string PaRes = GetValueHTML.GetValue("PaRes", html3ds);
+            var request = new RestRequest($"/cgi-bin/cgi_link", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddParameter("PaRes", PaRes, ParameterType.GetOrPost);
+            request.AddParameter("MD", GetValueHTML.GetValue("MD", html3ds), ParameterType.GetOrPost);
+            return _client.Execute(request);
+        }
+        public RestResponse C2C3DS(string html)
+        {
+            var firstStep = C2C3DSFirstStep(html);
+            string gid = GetValueHTML.GetGid(firstStep.Content);
+            var secondStep = C2C3DSSecondStep(firstStep.Content, gid);
+            var thirdStep = C2C3DSThirdStep(secondStep.Content,"111111", gid);
+            return C2C3DSFourthStep(thirdStep.Content);
         }
     }
 }
