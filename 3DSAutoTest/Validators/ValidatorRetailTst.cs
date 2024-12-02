@@ -25,26 +25,9 @@ namespace _3DSAutoTest.Validators
             var beforeBalance = before.Balance;
             var afterBalance = after.Balance;
             var amountOp = Convert.ToInt32(amount);
-            if ((beforeBalance + amountOp) == afterBalance)
-            {
-                Assert.Pass("Деньги успешно начислены");
-            }
-            else
-            {
-                Assert.Fail("Деньги не пришли");
-            }
-        }
-        /// <summary>
-        /// Пытался посчитать что деньги пришли уперся в то что деньги приходят долго
-        /// </summary>
-        /// <param name="before"></param>
-        /// <param name="after"></param>
-        /// <param name="amount"></param>
-        public static void CheckBalanceCard(DataCardResponse before, DataCardResponse after, string amount)
-        {
-            var beforeBalance = before.Balance;
-            var afterBalance = after.Balance;
-            var amountOp = Convert.ToInt32(amount);
+            Console.WriteLine(amountOp);
+            Console.WriteLine(beforeBalance + amountOp);
+            Console.WriteLine(afterBalance);
             if ((beforeBalance + amountOp) == afterBalance)
             {
                 Assert.Pass("Деньги успешно начислены");

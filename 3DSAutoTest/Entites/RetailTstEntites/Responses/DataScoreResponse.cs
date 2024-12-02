@@ -5,7 +5,7 @@ namespace _3DSAutoTest.Entites.RetailTstEntites.responses
     public class DataScoreResponse
     {
         [JsonPropertyName("minBalance")]
-        public double MinBalance { get; set; }
+        public int MinBalance { get; set; }
 
         [JsonPropertyName("isAccountClosureAvailable")]
         public bool IsAccountClosureAvailable { get; set; }
@@ -41,10 +41,10 @@ namespace _3DSAutoTest.Entites.RetailTstEntites.responses
         public string ClientLabel { get; set; }
 
         [JsonPropertyName("balance")]
-        public double Balance { get; set; }
+        public int Balance { get; set; }
 
         [JsonPropertyName("availableBalance")]
-        public double AvailableBalance { get; set; }
+        public int AvailableBalance { get; set; }
 
         [JsonPropertyName("isWithReplenishment")]
         public bool IsWithReplenishment { get; set; }
