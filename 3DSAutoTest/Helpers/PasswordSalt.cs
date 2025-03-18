@@ -31,6 +31,7 @@ namespace _3DSAutoTest.Helpers
                 // Декодируем сессионную соль из Base64
                 byte[] sessSaltBytes = Convert.FromBase64String(sessSalt);
 
+                //рочитьб рол iDiposable
                 // Применяем PBKDF2
                 using (var pbkdf2 = new Rfc2898DeriveBytes(hash, sessSaltBytes, 10000))
                 {
